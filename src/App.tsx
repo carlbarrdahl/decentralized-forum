@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider, useQuery } from "react-query";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { HashRouter, Routes, Route, Link } from "react-router-dom";
 import { ChakraProvider, Container } from "@chakra-ui/react";
 import Forum from "./pages/Forum";
 import NewPost from "./pages/NewPost";
@@ -18,7 +18,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <OrbitProvider>
           <ChakraProvider>
-            <BrowserRouter>
+            <HashRouter>
               <Layout>
                 <Routes>
                   <Route path="/" element={<Forum />} />
@@ -31,7 +31,7 @@ function App() {
                   />
                 </Routes>
               </Layout>
-            </BrowserRouter>
+            </HashRouter>
           </ChakraProvider>
         </OrbitProvider>
       </QueryClientProvider>
