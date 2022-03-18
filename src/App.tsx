@@ -2,8 +2,6 @@ import { useState } from "react";
 import { QueryClient, QueryClientProvider, useQuery } from "react-query";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { ChakraProvider, Container } from "@chakra-ui/react";
-// import { forum } from "./db/forum";
-
 import Forum from "./pages/Forum";
 import NewPost from "./pages/NewPost";
 import ViewPost from "./pages/ViewPost";
@@ -11,8 +9,6 @@ import OrbitProvider from "./providers/Orbit";
 
 import Layout from "./components/Layout";
 import Web3Provider from "./providers/Web3";
-
-// console.log(forum);
 
 const queryClient = new QueryClient();
 
