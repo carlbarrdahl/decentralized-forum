@@ -1,0 +1,48 @@
+{
+  "name": "forum",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^1.8.6",
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@ethersproject/providers": "^5.6.0",
+    "@self.id/framework": "^0.2.0",
+    "@self.id/react": "^0.2.0",
+    "@self.id/web": "^0.3.0",
+    "@web3-react/core": "^6.1.9",
+    "@web3-react/injected-connector": "^6.0.7",
+    "boring-avatars": "^1.6.3",
+    "buffer": "^6.0.3",
+    "date-fns": "^2.28.0",
+    "framer-motion": "^6",
+    "ipfs": "^0.62.1",
+    "orbit-db": "^0.28.3",
+    "orbit-db-identity-provider": "^0.4.0",
+    "path-browserify": "^1.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-hook-form": "^7.27.1",
+    "react-icons": "^4.3.1",
+    "react-query": "^3.34.16",
+    "react-router-dom": "^6.2.2",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-polyfill-node": "^0.8.0",
+    "slate": "^0.73.1",
+    "slate-history": "^0.66.0",
+    "slate-react": "^0.74.2"
+  },
+  "devDependencies": {
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
+    "@types/react": "^17.0.33",
+    "@types/react-dom": "^17.0.10",
+    "@vitejs/plugin-react": "^1.0.7",
+    "typescript": "^4.5.4",
+    "vite": "^2.8.0"
+  }
+}
