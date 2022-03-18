@@ -80,7 +80,7 @@ const CommentBox = ({ parent, onClose }) => {
 
 const Post = ({ id, parent, content, author, created_at, onEdit }) => {
   const { account } = useWeb3React();
-  console.log("account", account);
+  console.log("account", account, onEdit);
   return (
     <>
       <Flex py={4}>
@@ -142,7 +142,7 @@ export default function ViewPost() {
           parent={parent}
           key={comment.id}
           {...comment}
-          onEdit={setCompose}
+          onEdit={(val) => setCompose(val)}
         />
       ))}
       {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
