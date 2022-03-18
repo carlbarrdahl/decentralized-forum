@@ -30,7 +30,10 @@ export function useListPosts() {
     ["posts"],
     async () => {
       console.log("useListPosts", db);
-      return db.posts.query(() => true).map((post) => getPost(post.id, db));
+      return db.posts
+        .query(() => true)
+        .map((post) => getPost(post.id, db))
+        .sort((a, b) => (a.created_at > b.created_at ? -1 : 1));
     },
     { enabled: !!db }
   );
