@@ -135,14 +135,14 @@ export default function ViewPost() {
         {data.title}
       </Heading>
       <Divider />
-      <Post {...data} />
+      <Post {...data} onEdit={setCompose} />
 
       {(data.comments || []).map((comment: any) => (
         <Post
           parent={parent}
           key={comment.id}
           {...comment}
-          onEdit={(val) => setCompose(val)}
+          onEdit={setCompose}
         />
       ))}
       {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
