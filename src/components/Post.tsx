@@ -1,3 +1,5 @@
+import React from "react";
+
 import {
   Box,
   Divider,
@@ -16,7 +18,6 @@ import {
   useStream,
 } from "../hooks/forum";
 import { FiHeart, FiLink, FiMessageCircle, FiEdit2, FiX } from "react-icons/fi";
-import { useWeb3React } from "@web3-react/core";
 import Avatar from "boring-avatars";
 
 import { usePublicRecord, useViewerConnection } from "@self.id/react";
@@ -87,7 +88,7 @@ const Comments = ({ parent, onEdit }) => {
 };
 
 export default function Post({ id, parent, author, created_at, onEdit }) {
-  const { account } = useWeb3React();
+  const [{ selfID }]: any = useViewerConnection();
 
   const { data: { content } = {}, isLoading, error } = useStream(id);
 
@@ -101,7 +102,7 @@ export default function Post({ id, parent, author, created_at, onEdit }) {
               <ProfileName did={author} />
             </Link>
             <Flex alignItems={"center"}>
-              {account === author ? (
+              {selfID?.id === author ? (
                 <IconButton
                   variant="ghost"
                   aria-label="edit"

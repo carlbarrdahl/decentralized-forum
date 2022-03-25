@@ -39,13 +39,8 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Forum />} />
                   <Route path="/new" element={<NewPost />} />
-                  <Route path="/u/:did" element={<UserProfile />} />
                   <Route path="/:postId" element={<ViewPost />} />
-                  <Route path="/:postId/edit" element={<ViewPost />} />
-                  <Route
-                    path="/:postId/:commentId/:action"
-                    element={<ViewPost />}
-                  />
+                  <Route path="/u/:did" element={<UserProfile />} />
                 </Routes>
               </Layout>
             </HashRouter>
@@ -55,30 +50,5 @@ function App() {
     </CeramicProvider>
   );
 }
-
-/*
-
-
-ForumPage (query type === post)
-  Topic
-    title
-    created, updated
-    # comments, likes
-  Topic
-    ...
-
-TopicPage
-  title
-  content
-  likes
-  comments
-    Comment
-      content
-      likes
-      comments
-
-
-
-*/
 
 export default App;

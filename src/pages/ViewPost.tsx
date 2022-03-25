@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Divider, Heading } from "@chakra-ui/react";
 
@@ -17,6 +17,7 @@ export default function ViewPost() {
         {data?.title}
       </Heading>
       <Divider />
+      {/* @ts-ignore */}
       <Post {...data} onEdit={setCompose} />
 
       {composeId ? (
