@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 async function createOrbitDB() {
   const ipfsConfig = {
     preload: { enabled: false }, // Prevents large data transfers
-    repo: "/orbitdb/dxdao/forum/ipfs/0.55.1",
+    repo: "/orbitdb/dxdao/forum/registry/0.0.1",
     EXPERIMENTAL: {
       pubsub: true,
     },
@@ -35,11 +35,6 @@ async function createOrbitDB() {
     },
   };
 
-  // const identity = await Identities.createIdentity({
-  //   type: "ethereum",
-  //   wallet,
-  // })
-
   // @ts-ignore
   const ipfs = await window.Ipfs.create(ipfsConfig);
   // @ts-ignore
@@ -47,15 +42,18 @@ async function createOrbitDB() {
 
   const posts = await orbitdb.docstore("posts", dbConfig);
   const comments = await orbitdb.docstore("comments", dbConfig);
+  const registry = await orbitdb.docstore("registry", dbConfig);
 
   await posts.load();
   await comments.load();
+  await registry.load();
   // @ts-ignore
   window.orbitdb = orbitdb;
   return {
     orbitdb,
     posts,
     comments,
+    registry,
   };
 }
 
@@ -74,9 +72,6 @@ export default function OrbitProvider(props) {
       setState({ isLoading: false, error: null, data })
     );
   }, []);
-  //   console.log("db", db);
-  if (isLoading) return <div>...</div>;
-  if (error) return <pre>{JSON.stringify(error, null, 2)}</pre>;
   return (
     <OrbitContext.Provider value={data}>{props.children}</OrbitContext.Provider>
   );

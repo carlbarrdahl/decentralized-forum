@@ -1,10 +1,19 @@
-import { Table, Thead, Tr, Th, Td, Text, Tbody } from "@chakra-ui/react";
+import {
+  Table,
+  Thead,
+  Tr,
+  Th,
+  Td,
+  Text,
+  Tbody,
+  Skeleton,
+  SkeletonText,
+} from "@chakra-ui/react";
 import Link from "../components/Link";
-import { useListPosts } from "../hooks/posts";
+import { useRegistry } from "../hooks/forum";
 
 const PostList = () => {
-  const { data = [], isLoading, error } = useListPosts();
-  console.log(data);
+  const { data = [], isLoading, error } = useRegistry({ type: "post" });
   return (
     <Table>
       <Thead>
@@ -15,19 +24,46 @@ const PostList = () => {
         </Tr>
       </Thead>
       <Tbody>
-        {data.map((post) => (
-          <Tr key={post.id}>
-            <Td>
-              <Link href={`/${post.id}`}>
-                <Text fontSize={"md"}>{post.title}</Text>
-              </Link>
+        {isLoading ? (
+          <Tr>
+            <Td colSpan={3}>
+              <SkeletonText noOfLines={1} />
             </Td>
-            <Td isNumeric>{post.comments.length}</Td>
-            <Td isNumeric>{post.last_activity}</Td>
           </Tr>
+        ) : null}
+        {data.map((post) => (
+          <TopicRow key={post.id} {...post} />
         ))}
       </Tbody>
     </Table>
+  );
+};
+
+export function getLastActivity(items) {
+  return items.map((c) => c.updated_at).sort((a, b) => (a < b ? 1 : -1))[0];
+}
+const TopicRow = ({ id, title, updated_at }) => {
+  const {
+    data = [],
+    isLoading,
+    error,
+  } = useRegistry({ parent: id, type: "comment" });
+
+  const lastActivity = getLastActivity(data) || updated_at;
+  return (
+    <Tr>
+      <Td>
+        <Link href={`/${id}`}>
+          <Text fontSize={"md"}>{title}</Text>
+        </Link>
+      </Td>
+      <Skeleton as={Td} isNumeric isLoaded={!isLoading}>
+        {data.length}
+      </Skeleton>
+      <Skeleton as={Td} isNumeric isLoaded={!isLoading}>
+        {lastActivity}
+      </Skeleton>
+    </Tr>
   );
 };
 
