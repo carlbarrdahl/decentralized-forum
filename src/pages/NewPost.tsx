@@ -2,13 +2,13 @@ import { Box, FormControl, Input, FormLabel, Textarea } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button";
-import { useCreatePost } from "../hooks/posts";
+import { EntryInput, useCreateEntry } from "../hooks/forum";
 
 const CreatePost = () => {
-  const create = useCreatePost();
+  const create = useCreateEntry();
   const navigate = useNavigate();
-  const { register, handleSubmit, reset } = useForm({
-    defaultValues: { title: "", content: "" },
+  const { register, handleSubmit, reset } = useForm<EntryInput>({
+    defaultValues: { title: "", content: "", type: "post" },
   });
 
   return (
@@ -17,7 +17,7 @@ const CreatePost = () => {
       onSubmit={handleSubmit((form) => {
         console.log("create post", form);
         create.mutate(form, {
-          onSuccess: ({ id }) => {
+          onSuccess: (id) => {
             reset();
             navigate(`/${id}`);
           },

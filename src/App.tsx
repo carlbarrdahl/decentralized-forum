@@ -1,20 +1,36 @@
-import { useState } from "react";
-import { QueryClient, QueryClientProvider, useQuery } from "react-query";
-import { HashRouter, Routes, Route, Link } from "react-router-dom";
-import { ChakraProvider, Container } from "@chakra-ui/react";
+import React, { useState } from "react";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { HashRouter, Routes, Route } from "react-router-dom";
+import { ChakraProvider } from "@chakra-ui/react";
+
 import Forum from "./pages/Forum";
 import NewPost from "./pages/NewPost";
 import ViewPost from "./pages/ViewPost";
-import OrbitProvider from "./providers/Orbit";
+import UserProfile from "./pages/UserProfile";
 
 import Layout from "./components/Layout";
-import Web3Provider from "./providers/Web3";
 
-const queryClient = new QueryClient();
+import OrbitProvider from "./providers/Orbit";
+import { Provider as CeramicProvider } from "@self.id/react";
+import type { ModelTypeAliases, ModelTypesToAliases } from "@glazed/types";
+
+import publishedModel from "./model.json";
+
+const model: ModelTypesToAliases<ModelTypeAliases<{}, {}>> = publishedModel;
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
+});
 
 function App() {
   return (
-    <Web3Provider>
+    <CeramicProvider
+      client={{
+        ceramic: "testnet-clay",
+        connectNetwork: "testnet-clay",
+        model,
+      }}
+    >
       <QueryClientProvider client={queryClient}>
         <OrbitProvider>
           <ChakraProvider>
@@ -23,6 +39,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Forum />} />
                   <Route path="/new" element={<NewPost />} />
+                  <Route path="/u/:did" element={<UserProfile />} />
                   <Route path="/:postId" element={<ViewPost />} />
                   <Route path="/:postId/edit" element={<ViewPost />} />
                   <Route
@@ -35,8 +52,33 @@ function App() {
           </ChakraProvider>
         </OrbitProvider>
       </QueryClientProvider>
-    </Web3Provider>
+    </CeramicProvider>
   );
 }
+
+/*
+
+
+ForumPage (query type === post)
+  Topic
+    title
+    created, updated
+    # comments, likes
+  Topic
+    ...
+
+TopicPage
+  title
+  content
+  likes
+  comments
+    Comment
+      content
+      likes
+      comments
+
+
+
+*/
 
 export default App;
