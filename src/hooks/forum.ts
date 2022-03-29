@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useCore, useViewerConnection } from "@self.id/react";
 import { TileDocument } from "@ceramicnetwork/stream-tile";
-import { useOrbit } from "../providers/Orbit";
+
+import { setIdentity, useOrbit } from "../providers/Orbit";
 
 type Query = {
   id?: string;
@@ -11,6 +12,7 @@ type Query = {
   sortBy?: string;
   sortDirection?: string;
 };
+
 export function useRegistry(query: Query) {
   const db: any = useOrbit();
 
@@ -58,9 +60,13 @@ export type Entry = Partial<EntryInput> & {
 export function useCreateEntry() {
   const core = useCore();
   const [{ selfID }]: any = useViewerConnection();
+
   const db: any = useOrbit();
   const client = useQueryClient();
   return useMutation(async (props: EntryInput) => {
+    // Link OrbitDB and Ceramic identities
+    await setIdentity(db.orbitdb, selfID.client);
+
     const now = getNow();
     const entity = {
       author: selfID.id,
@@ -94,6 +100,9 @@ export function useUpdateEntry() {
   const db: any = useOrbit();
   const client = useQueryClient();
   return useMutation(async (update: Entry) => {
+    // Link OrbitDB and Ceramic identities
+    await setIdentity(db.orbitdb, selfID.client);
+
     update.updated_at = getNow();
     const { id, ...post } = update;
     console.log("removing post", id, selfID.id);

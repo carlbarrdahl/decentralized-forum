@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
+import Identities from "orbit-db-identity-provider";
+import { getResolver } from "@ceramicnetwork/3id-did-resolver";
+
 async function createOrbitDB() {
   const ipfsConfig = {
     preload: { enabled: false }, // Prevents large data transfers
@@ -40,21 +43,26 @@ async function createOrbitDB() {
   // @ts-ignore
   const orbitdb = await window.OrbitDB.createInstance(ipfs);
 
-  const posts = await orbitdb.docstore("posts", dbConfig);
-  const comments = await orbitdb.docstore("comments", dbConfig);
   const registry = await orbitdb.docstore("registry", dbConfig);
 
-  await posts.load();
-  await comments.load();
   await registry.load();
   // @ts-ignore
   window.orbitdb = orbitdb;
   return {
     orbitdb,
-    posts,
-    comments,
     registry,
   };
+}
+
+export async function setIdentity(orbitdb, { ceramic, threeId }) {
+  if (orbitdb.identity.type !== "did") {
+    Identities.DIDIdentityProvider.setDIDResolver(getResolver(ceramic));
+    const identity = await Identities.createIdentity({
+      type: "DID",
+      didProvider: threeId.getDidProvider(),
+    });
+    orbitdb.identity = identity;
+  }
 }
 
 const OrbitContext = createContext({});

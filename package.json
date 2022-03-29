@@ -10,6 +10,7 @@
     "publish-model": "node --experimental-json-modules ./scripts/publish-model.mjs"
   },
   "dependencies": {
+    "@ceramicnetwork/3id-did-resolver": "^1.4.16",
     "@chakra-ui/react": "^1.8.6",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
