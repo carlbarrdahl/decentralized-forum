@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   Box,
@@ -8,6 +8,7 @@ import {
   ButtonGroup,
   IconButton,
   SkeletonText,
+  Textarea,
 } from "@chakra-ui/react";
 import Link from "../components/Link";
 import Button from "../components/Button";
@@ -87,11 +88,32 @@ const Comments = ({ parent, onEdit }) => {
   );
 };
 
+function EditPost({ id, content, onSuccess }) {
+  const update = useUpdateEntry();
+  const [value, setValue] = useState(content);
+
+  return (
+    <>
+      <Textarea
+        autoFocus
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+      <Button
+        isLoading={update.isLoading}
+        onClick={() => update.mutate({ id, content: value }, { onSuccess })}
+      >
+        Save
+      </Button>
+    </>
+  );
+}
+
 export default function Post({ id, parent, author, created_at, onEdit }) {
   const [{ selfID }]: any = useViewerConnection();
+  const [isEditing, setEditing] = useState("");
 
   const { data: { content } = {}, isLoading, error } = useStream(id);
-
   return (
     <>
       <Flex py={4}>
@@ -102,22 +124,30 @@ export default function Post({ id, parent, author, created_at, onEdit }) {
               <ProfileName did={author} />
             </Link>
             <Flex alignItems={"center"}>
-              {selfID?.id === author ? (
-                <IconButton
-                  variant="ghost"
-                  aria-label="edit"
-                  icon={<FiEdit2 />}
-                  mr={2}
-                  onClick={() => onEdit(id)}
-                />
-              ) : null}
+              {/* {selfID?.id === author ? ( */}
+              <IconButton
+                variant="ghost"
+                aria-label="edit"
+                icon={<FiEdit2 />}
+                mr={2}
+                onClick={() => setEditing(id)}
+              />
+              {/* ) : null} */}
               <Text title={created_at} py={2}>
                 {formatTime(created_at)}
               </Text>
             </Flex>
           </Flex>
           <SkeletonText isLoaded={!!content}>
-            <Text>{content}</Text>
+            {isEditing ? (
+              <EditPost
+                id={id}
+                content={content}
+                onSuccess={() => setEditing("")}
+              />
+            ) : (
+              <Text whiteSpace={"pre-wrap"}>{content}</Text>
+            )}
           </SkeletonText>
 
           <Flex justify={"flex-end"}>

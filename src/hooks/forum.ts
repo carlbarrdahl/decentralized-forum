@@ -81,13 +81,11 @@ export function useCreateEntry() {
       .createTile("Post", entity)
       .then((doc) => doc.id.toString());
 
-    // Remove content from data to index
-    const { content, ...toIndex } = entity;
     console.log("post created", id);
     console.log("adding to registry");
-    await db.registry.put({ id, ...toIndex });
 
-    console.log("added");
+    // @ts-ignore
+    await db.registry.put(buildRegistryData({ id, ...entity }));
 
     await client.invalidateQueries(["registry"]);
     return id;
@@ -104,18 +102,31 @@ export function useUpdateEntry() {
     await setIdentity(db.orbitdb, selfID.client);
 
     update.updated_at = getNow();
-    const { id, ...post } = update;
-    console.log("removing post", id, selfID.id);
-    await TileDocument.load(core.ceramic, id).then((doc) => doc?.update(post));
+    const { id } = update;
+    console.log("updating post", id, update, selfID.id);
+
+    const merged = await TileDocument.load(core.ceramic, id).then(
+      async (doc) => {
+        // @ts-ignore
+        const patch = { ...doc.content, ...update };
+        await doc?.update(patch);
+        return patch;
+      }
+    );
 
     // Remove content from data to index
     console.log("post updated", id);
     console.log("updating registry");
-    await db.registry.put({ id, ...post });
+    await db.registry.put(buildRegistryData(merged));
 
-    await client.invalidateQueries(["registry"]);
+    client.invalidateQueries(["registry"]);
+    client.invalidateQueries([id]);
     return id;
   });
+}
+
+function buildRegistryData({ content, ...data }) {
+  return data;
 }
 
 export function useStream(streamID) {
