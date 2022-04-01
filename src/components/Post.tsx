@@ -36,6 +36,7 @@ const LikeButton = ({ id }) => {
 
   return (
     <Button
+      isLoading={update.isLoading || create.isLoading}
       aria-label="like"
       rightIcon={
         <FiHeart
