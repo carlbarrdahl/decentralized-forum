@@ -13,7 +13,9 @@ const ProfileForm = ({ profile, isLoading, onSave }) => {
         Currently set to: {profile?.name}
         <Input {...register("name")} />
       </FormLabel>
-      <Button isLoading={isLoading}>Save</Button>
+      <Button type="submit" isLoading={isLoading}>
+        Save
+      </Button>
     </form>
   );
 };
