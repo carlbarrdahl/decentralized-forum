@@ -6,12 +6,13 @@ import {
   MenuList,
   Text,
   Flex,
-  Link,
   Spinner,
 } from "@chakra-ui/react";
 import Avatar from "boring-avatars";
 import { useIsFetching } from "react-query";
 import { useConnect } from "../hooks/auth";
+
+import Link from "./Link";
 
 const ConnectButton: React.FC = () => {
   const isGlobalLoading = useIsFetching();
@@ -35,7 +36,9 @@ const ConnectButton: React.FC = () => {
           )}
         </MenuButton>
         <MenuList>
-          <MenuItem>Profile</MenuItem>
+          <MenuItem>
+            <Link href={`/u/${connection.selfID.id}`}>Profile</Link>
+          </MenuItem>
           <MenuItem onClick={() => disconnect()}>Sign out</MenuItem>
         </MenuList>
       </Menu>
