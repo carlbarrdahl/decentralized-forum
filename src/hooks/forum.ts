@@ -20,11 +20,11 @@ export type Entry = Partial<EntryInput> & {
 };
 
 export function useCreateEntry() {
-  const core = useCore();
   const [{ selfID }]: any = useViewerConnection();
 
   const db: any = useOrbit();
   const cache = useQueryClient();
+
   return useMutation(async (props: EntryInput) => {
     console.time("creating post");
     // Link OrbitDB and Ceramic identities
@@ -38,13 +38,12 @@ export function useCreateEntry() {
       ...props,
     };
 
-    console.log("creating post", entity, selfID.id);
-    const created = await core.dataModel
-      // @ts-ignore
+    console.log("creating post", entity);
+    const created = await selfID.client.dataModel
       .createTile("Post", entity)
       .then(mapId);
 
-    console.log("adding to registry", created);
+    console.log("adding to registry", created.id);
     await db.registry.put(toIndex(created));
 
     // Update UI - could possibly be more specific by passing a query
@@ -55,10 +54,11 @@ export function useCreateEntry() {
 }
 
 export function useUpdateEntry() {
-  const core = useCore();
   const [{ selfID }]: any = useViewerConnection();
+
   const db: any = useOrbit();
-  const client = useQueryClient();
+  const cache = useQueryClient();
+
   return useMutation(async (props: Entry) => {
     console.time("updating post");
     // Link OrbitDB and Ceramic identities
@@ -71,14 +71,15 @@ export function useUpdateEntry() {
     }
     console.log("updating post", id, props);
 
-    const updated = await TileDocument.load<Entry>(core.ceramic, id).then(
-      async (doc) => {
-        // Merge the new data with the existing data
-        const patch = { ...doc.content, ...props };
-        await doc?.update(patch);
-        return patch;
-      }
-    );
+    const updated = await TileDocument.load<Entry>(
+      selfID.client.ceramic,
+      id
+    ).then(async (doc) => {
+      // Merge the new data with the existing data
+      const patch = { ...doc.content, ...props };
+      await doc?.update(patch);
+      return patch;
+    });
 
     console.log("post updated", updated);
 
@@ -86,8 +87,8 @@ export function useUpdateEntry() {
     await db.registry.put(toIndex(updated));
 
     // Update the UI where these queries are used
-    client.invalidateQueries(["registry"]);
-    client.invalidateQueries([id]);
+    cache.invalidateQueries(["registry"]);
+    cache.invalidateQueries([id]);
 
     console.timeEnd("updating post");
     return id;
