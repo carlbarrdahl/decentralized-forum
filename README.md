@@ -9,12 +9,12 @@ OrbitDB is a p2p database built on IPFS and IPFS pubsub. A shared database can b
 ### How does it work?
 
 - Ceramic + Self.ID is used to authenticate and create a DID for a user with a connected Ethereum wallet (see [`hooks/auth.ts`](https://github.com/carlbarrdahl/decentralized-forum/blob/master/src/hooks/auth.ts))
-- DID is linked to OrbitDB as an Identity and each database entry has a signature and a publicKey ([`providers/Orbit.tsx#L71-L82`](https://github.com/carlbarrdahl/decentralized-forum/blob/master/src/providers/Orbit.tsx#L71-L82))
+- DID is linked to OrbitDB as an Identity and each database entry has a signature and a publicKey ([`providers/Orbit.tsx#L71-L82`](https://github.com/carlbarrdahl/decentralized-forum/blob/master/src/providers/Orbit.tsx#L71))
 - Posts, Comments, Likes etc are stored on Ceramic ([`hooks/forum.ts`](https://github.com/carlbarrdahl/decentralized-forum/blob/master/src/hooks/forum.ts), schema in [`scripts/create-model.mjs`](https://github.com/carlbarrdahl/decentralized-forum/blob/master/src/scripts/create-model.mjs)
   )
 - OrbitDB is used as a p2p registry to index data in a database based on `ipfs-log` (append-only log)
 - Whever data is written to OrbitDB the access controller verifies access with: `(entry) => (entry.identity.publicKey === identity.publicKey)`
-- The registry can be queried, searched and filtered with keys from the indexed data [`hooks/registry.ts#L15-L49`](https://github.com/carlbarrdahl/decentralized-forum/blob/master/src/hooks/registry.ts#L15-L49)
+- The registry can be queried, searched and filtered with keys from the indexed data [`hooks/registry.ts#L15-L49`](https://github.com/carlbarrdahl/decentralized-forum/blob/master/src/hooks/registry.ts#L15)
 
 A few examples:
 
