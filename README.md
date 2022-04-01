@@ -16,10 +16,30 @@ OrbitDB is a p2p database built on IPFS and IPFS pubsub. A shared database can b
 - Whever data is written to OrbitDB the access controller verifies access with: `(entry) => (entry.identity.publicKey === identity.publicKey)`
 - The registry can be queried, searched and filtered with keys from the indexed data [`hooks/registry.ts#L15-L49`](https://github.com/carlbarrdahl/decentralized-forum/blob/master/src/hooks/registry.ts#L15)
 
-A few examples:
+### Integration with project
+
+Example how integration with existing project could look like:
 
 ```js
+import {
+  Provider,
+  useRegistry,
+  useCreate,
+  useUpdate,
+  useStream,
+} from "@decentralized/forum"; // not a real package yet
+
+function App() {
+  // Setup project
+  return (
+    <Provider config={{ dbName: "my-app" }}>
+      <Forum />
+    </Provider>
+  );
+}
+
 function ForumPosts() {
+  // Query 10 most recent created posts
   const { data, isLoading, error } = useRegistry({
     type: "post",
     sortBy: "created_at",
@@ -27,7 +47,15 @@ function ForumPosts() {
   });
 }
 
+function Post({ id }) {
+  // Fetch Ceramic data
+  const {
+    data: { author, title, content },
+  } = useStream(id);
+}
+
 function CommentsForPost({ id }) {
+  // Query all comments for an id
   const { data, isLoading, error } = useRegistry({
     parent: id,
     type: "comment",
@@ -35,6 +63,7 @@ function CommentsForPost({ id }) {
 }
 
 function LikesForAuthor({ author }) {
+  // Query data for an author
   const { data, isLoading, error } = useRegistry({
     author,
     type: "likes",
@@ -42,11 +71,29 @@ function LikesForAuthor({ author }) {
 }
 
 function Feed({ id }) {
+  // Paginate data
   const { data, isLoading, error } = useRegistry({
     sortBy: "updated_at",
     sortDirection: "desc",
     limit: 20,
     skip: 0,
   });
+
+  return <Feed items={data} />;
+}
+
+function ComposeComment({ postId }) {
+  const create = useCreate();
+
+  return (
+    <CommentForm
+      onCreate={(form) =>
+        create.mutate(
+          { parent: postId, type: "comment", ...form },
+          { onSuccess: (id) => console.log("comment created", id) }
+        )
+      }
+    />
+  );
 }
 ```
