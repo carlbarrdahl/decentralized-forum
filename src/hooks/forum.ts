@@ -4,44 +4,6 @@ import { TileDocument } from "@ceramicnetwork/stream-tile";
 
 import { setIdentity, useOrbit } from "../providers/Orbit";
 
-type Query = {
-  id?: string;
-  type?: string;
-  parent?: string;
-  limit?: number;
-  sortBy?: string;
-  sortDirection?: string;
-};
-
-export function useRegistry(query: Query) {
-  const db: any = useOrbit();
-
-  const {
-    sortBy = "created_at",
-    sortDirection = "asc",
-    limit = 100,
-    ...where
-  } = query;
-  const orderDir = { asc: 1, desc: -1 };
-
-  return useQuery(
-    ["registry", query],
-    async () => {
-      return db.registry
-        .query((item) =>
-          Object.entries(where).every(([key, val]) => item[key] === val)
-        )
-        .sort((a, b) =>
-          a[sortBy] > b[sortBy]
-            ? orderDir[sortDirection] || 1
-            : -orderDir[sortDirection] || -1
-        )
-        .slice(0, limit);
-    },
-    { enabled: !!db?.registry?.query }
-  );
-}
-
 export type EntryInput = {
   title?: string;
   author?: string;
@@ -57,15 +19,62 @@ export type Entry = Partial<EntryInput> & {
   updated_at: string;
 };
 
+type Query = {
+  id?: string;
+  type?: string;
+  parent?: string;
+  limit?: number;
+  sortBy?: string;
+  sortDirection?: string;
+};
+
+export function useRegistry(query: Query) {
+  const { registry }: any = useOrbit();
+
+  const {
+    sortBy = "created_at",
+    sortDirection = "asc",
+    limit = Infinity,
+    ...where
+  } = query;
+
+  const dirMap = { asc: 1, desc: -1 };
+
+  return useQuery(
+    ["registry", query],
+    async () => {
+      console.time("Querying registry");
+      // console.info("Registry query:", query);
+      const items = registry
+        .query((item) =>
+          // Compare each key and value in where with the item eg: { type: "post" }
+          Object.entries(where).every(([key, val]) => item[key] === val)
+        )
+        .sort((a, b) =>
+          // Sort the results by key and direction
+          a[sortBy] > b[sortBy]
+            ? dirMap[sortDirection] || 1
+            : -dirMap[sortDirection] || -1
+        )
+        .slice(0, limit);
+
+      console.timeEnd("Querying registry");
+      return items;
+    },
+    { enabled: !!registry }
+  );
+}
+
 export function useCreateEntry() {
   const core = useCore();
   const [{ selfID }]: any = useViewerConnection();
 
   const db: any = useOrbit();
-  const client = useQueryClient();
+  const cache = useQueryClient();
   return useMutation(async (props: EntryInput) => {
+    console.time("creating post");
     // Link OrbitDB and Ceramic identities
-    await setIdentity(db.orbitdb, selfID.client);
+    await setIdentity(db, selfID.client);
 
     const now = getNow();
     const entity = {
@@ -76,19 +85,18 @@ export function useCreateEntry() {
     };
 
     console.log("creating post", entity, selfID.id);
-    const id = await core.dataModel
+    const created = await core.dataModel
       // @ts-ignore
       .createTile("Post", entity)
-      .then((doc) => doc.id.toString());
+      .then(mapId);
 
-    console.log("post created", id);
-    console.log("adding to registry");
+    console.log("adding to registry", created);
+    await db.registry.put(toIndex(created));
 
-    // @ts-ignore
-    await db.registry.put(buildRegistryData({ id, ...entity }));
-
-    await client.invalidateQueries(["registry"]);
-    return id;
+    // Update UI - could possibly be more specific by passing a query
+    await cache.invalidateQueries(["registry"]);
+    console.timeEnd("creating post");
+    return created.id;
   });
 }
 
@@ -97,50 +105,53 @@ export function useUpdateEntry() {
   const [{ selfID }]: any = useViewerConnection();
   const db: any = useOrbit();
   const client = useQueryClient();
-  return useMutation(async (update: Entry) => {
+  return useMutation(async (props: Entry) => {
+    console.time("updating post");
     // Link OrbitDB and Ceramic identities
-    await setIdentity(db.orbitdb, selfID.client);
+    await setIdentity(db, selfID.client);
 
-    update.updated_at = getNow();
-    const { id } = update;
-    console.log("updating post", id, update, selfID.id);
+    props.updated_at = getNow();
+    const { id } = props;
+    if (!id) {
+      throw new Error("No id provided to update entry");
+    }
+    console.log("updating post", id, props);
 
-    const merged = await TileDocument.load(core.ceramic, id).then(
+    const updated = await TileDocument.load<Entry>(core.ceramic, id).then(
       async (doc) => {
-        // @ts-ignore
-        const patch = { ...doc.content, ...update };
+        // Merge the new data with the existing data
+        const patch = { ...doc.content, ...props };
         await doc?.update(patch);
         return patch;
       }
     );
 
-    // Remove content from data to index
-    console.log("post updated", id);
-    console.log("updating registry");
-    await db.registry.put(buildRegistryData(merged));
+    console.log("post updated", updated);
 
+    // Update registry
+    await db.registry.put(toIndex(updated));
+
+    // Update the UI where these queries are used
     client.invalidateQueries(["registry"]);
     client.invalidateQueries([id]);
+
+    console.timeEnd("updating post");
     return id;
   });
-}
-
-function buildRegistryData({ content, ...data }) {
-  return data;
 }
 
 export function useStream(streamID) {
   const core = useCore();
   return useQuery(
     [streamID],
-    async () => {
-      return core.tileLoader.load(streamID).then((doc) => ({
-        id: doc.id.toString(),
-        ...doc.content,
-      })) as Partial<Entry>;
-    },
+    async () => core.tileLoader.load(streamID).then(mapId) as Partial<Entry>,
     { enabled: !!streamID }
   );
 }
+
+const mapId = (doc) => ({ id: doc.id.toString(), ...doc.content });
+
+// Define what data to be indexed (currently everything except the content)
+const toIndex = ({ content, ...data }: Entry) => data;
 
 export const getNow = () => new Date().toISOString();

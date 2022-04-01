@@ -1,12 +1,18 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
+import * as IPFS from "ipfs";
+import * as OrbitDB from "orbit-db";
 import Identities from "orbit-db-identity-provider";
 import { getResolver } from "@ceramicnetwork/3id-did-resolver";
+import { useViewerConnection } from "@self.id/react";
 
+import CustomStore from "../../orbitdb/CustomStore";
+
+const env = process.env.NODE_ENV;
 async function createOrbitDB() {
   const ipfsConfig = {
     preload: { enabled: false }, // Prevents large data transfers
-    repo: "/orbitdb/dxdao/forum/registry/0.0.1",
+    // repo: `dforum-0.1_${env}`,
     EXPERIMENTAL: {
       pubsub: true,
     },
@@ -32,6 +38,7 @@ async function createOrbitDB() {
   const dbConfig = {
     create: true,
     sync: false,
+    type: "custom",
     indexBy: "id",
     accessController: {
       write: ["*"],
@@ -39,22 +46,27 @@ async function createOrbitDB() {
   };
 
   // @ts-ignore
-  const ipfs = await window.Ipfs.create(ipfsConfig);
+  const ipfs = await IPFS.create(ipfsConfig);
   // @ts-ignore
-  const orbitdb = await window.OrbitDB.createInstance(ipfs);
+  const orbitdb = await OrbitDB.createInstance(ipfs);
 
-  const registry = await orbitdb.docstore("registry", dbConfig);
+  // Add custom database
+  OrbitDB.addDatabaseType("custom", CustomStore);
+
+  const registry = await orbitdb.open(`dforum-0.12_${env}`, dbConfig);
 
   await registry.load();
   // @ts-ignore
   window.orbitdb = orbitdb;
+  // @ts-ignore
+  window.logdb = registry;
   return {
     orbitdb,
     registry,
   };
 }
 
-export async function setIdentity(orbitdb, { ceramic, threeId }) {
+export async function setIdentity({ orbitdb, registry }, { ceramic, threeId }) {
   if (orbitdb.identity.type !== "did") {
     Identities.DIDIdentityProvider.setDIDResolver(getResolver(ceramic));
     const identity = await Identities.createIdentity({
@@ -62,6 +74,8 @@ export async function setIdentity(orbitdb, { ceramic, threeId }) {
       didProvider: threeId.getDidProvider(),
     });
     orbitdb.identity = identity;
+    registry.setIdentity(identity);
+    console.log("OrbitDB: DID identity set!", identity);
   }
 }
 

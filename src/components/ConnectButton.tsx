@@ -9,50 +9,9 @@ import {
   Link,
   Spinner,
 } from "@chakra-ui/react";
-import { useViewerConnection } from "@self.id/react";
 import Avatar from "boring-avatars";
-import { useQueries, useQueryClient, useIsFetching } from "react-query";
-import { useLocalStorage } from "react-use";
-
-async function createAuthProvider() {
-  return import("@self.id/web").then(async ({ EthereumAuthProvider }) => {
-    // The following assumes there is an injected `window.ethereum` provider
-    const addresses = await global?.ethereum.request({
-      method: "eth_requestAccounts",
-    });
-
-    return new EthereumAuthProvider(global?.ethereum, addresses[0]);
-  });
-}
-
-export function useConnect() {
-  const queryClient = useQueryClient();
-  const [connection, connect, disconnect] = useViewerConnection();
-  const [did, setDid, removeDid] = useLocalStorage("did");
-
-  const [{ refetch: _connect }, { refetch: _disconnect }] = useQueries([
-    {
-      queryKey: "connect",
-      queryFn: async () => {
-        createAuthProvider()
-          .then(connect)
-          .then((user) => setDid(user?.id || ""));
-      },
-      enabled: !!did,
-    },
-    {
-      queryKey: "disconnect",
-      queryFn: () => {
-        disconnect();
-        removeDid();
-        queryClient.clear();
-      },
-      enabled: false,
-    },
-  ]);
-
-  return { connection, connect: _connect, disconnect: _disconnect };
-}
+import { useIsFetching } from "react-query";
+import { useConnect } from "../hooks/auth";
 
 const ConnectButton: React.FC = () => {
   const isGlobalLoading = useIsFetching();

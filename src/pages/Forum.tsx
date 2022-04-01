@@ -14,6 +14,7 @@ import { useRegistry } from "../hooks/forum";
 
 const PostList = () => {
   const { data = [], isLoading, error } = useRegistry({ type: "post" });
+
   return (
     <Table>
       <Thead>

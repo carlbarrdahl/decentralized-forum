@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Divider, Heading } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 
-import { useStream } from "../hooks/forum";
 import CommentBox from "../components/CommentBox";
 import Post from "../components/Post";
 
@@ -10,15 +9,9 @@ export default function ViewPost() {
   const { postId } = useParams();
   const [composeId, setCompose] = useState("");
 
-  const { data = {}, isLoading, error } = useStream(postId);
   return (
     <Box>
-      <Heading as="h1" fontSize={"2xl"} mb={3}>
-        {data?.title}
-      </Heading>
-      <Divider />
-      {/* @ts-ignore */}
-      <Post {...data} onEdit={setCompose} />
+      <Post id={postId} onEdit={setCompose} />
 
       {composeId ? (
         <CommentBox parent={composeId} onClose={() => setCompose("")} />
