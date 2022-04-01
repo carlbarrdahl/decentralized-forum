@@ -10,10 +10,14 @@ import {
   SkeletonText,
 } from "@chakra-ui/react";
 import Link from "../components/Link";
-import { useRegistry } from "../hooks/forum";
+import { useRegistry } from "../hooks/registry";
 
 const PostList = () => {
-  const { data = [], isLoading, error } = useRegistry({ type: "post" });
+  const {
+    data = [],
+    isLoading,
+    error,
+  } = useRegistry({ type: "post", sortBy: "updated_at" });
 
   return (
     <Table>

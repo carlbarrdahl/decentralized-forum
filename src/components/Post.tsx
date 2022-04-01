@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import {
   Box,
   Heading,
@@ -11,19 +10,15 @@ import {
   SkeletonText,
   Textarea,
 } from "@chakra-ui/react";
+import { FiHeart, FiLink, FiMessageCircle, FiEdit2, FiX } from "react-icons/fi";
+import Avatar from "boring-avatars";
+import { useViewerConnection } from "@self.id/react";
 
 import Link from "../components/Link";
 import Button from "../components/Button";
-import {
-  useCreateEntry,
-  useUpdateEntry,
-  useRegistry,
-  useStream,
-} from "../hooks/forum";
-import { FiHeart, FiLink, FiMessageCircle, FiEdit2, FiX } from "react-icons/fi";
-import Avatar from "boring-avatars";
+import { useCreateEntry, useUpdateEntry, useStream } from "../hooks/forum";
+import { useRegistry } from "../hooks/registry";
 
-import { usePublicRecord, useViewerConnection } from "@self.id/react";
 import { formatTime } from "../utils/date";
 import { useForm } from "react-hook-form";
 import ProfileName from "./ProfileName";
@@ -135,7 +130,6 @@ export default function Post({ id, onEdit }) {
     parent: id,
     type: "comment",
     sortBy: "created_at",
-    sortDirection: "asc",
   });
 
   const {

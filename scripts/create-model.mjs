@@ -58,6 +58,7 @@ const threadSchemaID = await manager.createSchema("Post", {
       title: "Author",
     },
     type: {
+      // post || comment || like || ...
       type: "string",
       title: "Type",
     },
