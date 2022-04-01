@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { ChakraProvider } from "@chakra-ui/react";
@@ -11,12 +11,7 @@ import UserProfile from "./pages/UserProfile";
 import Layout from "./components/Layout";
 
 import OrbitProvider from "./providers/Orbit";
-import { Provider as CeramicProvider } from "@self.id/react";
-import type { ModelTypeAliases, ModelTypesToAliases } from "@glazed/types";
-
-import publishedModel from "./model.json";
-
-const model: ModelTypesToAliases<ModelTypeAliases<{}, {}>> = publishedModel;
+import CeramicProvider from "./providers/Ceramic";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -24,13 +19,7 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <CeramicProvider
-      client={{
-        ceramic: "testnet-clay",
-        connectNetwork: "testnet-clay",
-        model,
-      }}
-    >
+    <CeramicProvider>
       <QueryClientProvider client={queryClient}>
         <OrbitProvider>
           <ChakraProvider>

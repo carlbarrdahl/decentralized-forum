@@ -4,7 +4,6 @@ import * as IPFS from "ipfs";
 import * as OrbitDB from "orbit-db";
 import Identities from "orbit-db-identity-provider";
 import { getResolver } from "@ceramicnetwork/3id-did-resolver";
-import { useViewerConnection } from "@self.id/react";
 
 import CustomStore from "../../orbitdb/CustomStore";
 
@@ -35,6 +34,17 @@ async function createOrbitDB() {
       },
     },
   };
+
+  // @ts-ignore
+  const ipfs = await IPFS.create(ipfsConfig);
+  // @ts-ignore
+  const orbitdb = await OrbitDB.createInstance(ipfs);
+
+  // Add custom database (DocStore without delete)
+  // TODO: Come up with a better name (AppendOnlyDocStore?)
+  OrbitDB.addDatabaseType("custom", CustomStore);
+
+  const dbName = `dforum-0.12_${env}`;
   const dbConfig = {
     create: true,
     sync: false,
@@ -44,16 +54,7 @@ async function createOrbitDB() {
       write: ["*"],
     },
   };
-
-  // @ts-ignore
-  const ipfs = await IPFS.create(ipfsConfig);
-  // @ts-ignore
-  const orbitdb = await OrbitDB.createInstance(ipfs);
-
-  // Add custom database
-  OrbitDB.addDatabaseType("custom", CustomStore);
-
-  const registry = await orbitdb.open(`dforum-0.12_${env}`, dbConfig);
+  const registry = await orbitdb.open(dbName, dbConfig);
 
   await registry.load();
   // @ts-ignore
@@ -66,6 +67,7 @@ async function createOrbitDB() {
   };
 }
 
+// Connects the logged in Ceramic user to OrbitDB
 export async function setIdentity({ orbitdb, registry }, { ceramic, threeId }) {
   if (orbitdb.identity.type !== "did") {
     Identities.DIDIdentityProvider.setDIDResolver(getResolver(ceramic));
