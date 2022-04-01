@@ -79,7 +79,7 @@ function Feed({ id }) {
     skip: 0,
   });
 
-  return <Feed items={data} />;
+  return <FeedList items={data} />;
 }
 
 function ComposeComment({ postId }) {
